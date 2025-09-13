@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
 import './Results.css';
 
 const Results = () => {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedResult, setSelectedResult] = useState(null);
 
   useEffect(() => {
     // Fetch real analysis results from backend API
@@ -20,8 +23,8 @@ const Results = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            cvContent: 'Sample CV content here',
-            jdContent: 'Sample Job Description content here',
+            cvContent: 'Sample CV: Experienced software developer with skills in JavaScript, HTML, CSS, and basic Python.',
+            jdContent: 'Sample Job Description for a software engineer role requiring React, Node.js, and Python skills.',
           }),
         });
 
@@ -67,6 +70,22 @@ const Results = () => {
     return analysisText ? analysisText.substring(0, 100) + '...' : '';
   };
 
+  const handleViewFullReport = (result) => {
+    setSelectedResult(result);
+    setShowModal(true);
+  };
+
+  const handleExportPDF = (result) => {
+    const { jsPDF } = require('jspdf');
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text(result.type, 10, 20);
+    doc.setFontSize(12);
+    const lines = doc.splitTextToSize(result.details, 180);
+    doc.text(lines, 10, 40);
+    doc.save('report.pdf');
+  };
+
   return (
     <div className="results-page">
       <div className="results-container">
@@ -109,12 +128,12 @@ const Results = () => {
 
                 <div className="result-details">
                   <h4>Details</h4>
-                  <p>{result.details}</p>
+                  <ReactMarkdown>{result.details}</ReactMarkdown>
                 </div>
 
                 <div className="result-actions">
-                  <button className="view-btn">View Full Report</button>
-                  <button className="export-btn">Export PDF</button>
+                  <button className="view-btn" onClick={() => handleViewFullReport(result)}>View Full Report</button>
+                  <button className="export-btn" onClick={() => handleExportPDF(result)}>Export PDF</button>
                 </div>
               </div>
             ))}
@@ -125,6 +144,16 @@ const Results = () => {
             <h3>No Results Yet</h3>
             <p>Start your first analysis to see results here</p>
             <button className="start-analysis-btn">Start Analysis</button>
+          </div>
+        )}
+
+        {showModal && selectedResult && (
+          <div className="modal">
+            <div className="modal-content">
+              <span className="close" onClick={() => setShowModal(false)}>&times;</span>
+              <h2>{selectedResult.type}</h2>
+              <ReactMarkdown>{selectedResult.details}</ReactMarkdown>
+            </div>
           </div>
         )}
       </div>

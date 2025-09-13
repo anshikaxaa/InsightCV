@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Upload.css';
 
 const Upload = () => {
+  const navigate = useNavigate();
   const [cvFile, setCvFile] = useState(null);
   const [jdFile, setJdFile] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -67,6 +69,7 @@ const Upload = () => {
         setUploadStatus('Files uploaded successfully!');
         setCvFile(null);
         setJdFile(null);
+        navigate('/results');
       } else {
         setUploadStatus('Some files failed to upload. Please try again.');
       }
