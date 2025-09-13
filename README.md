@@ -20,7 +20,7 @@ InsightCV is a modern web application that uses AI to analyze CVs and job descri
 
 ### Backend
 - Node.js with Express
-- OpenAI API integration
+- Google Gemini API integration
 - PDF parsing with pdf-parse
 - File upload handling with Multer
 - CORS enabled for cross-origin requests
@@ -29,7 +29,7 @@ InsightCV is a modern web application that uses AI to analyze CVs and job descri
 
 - Node.js (v16 or higher)
 - npm or yarn
-- OpenAI API key
+- Google Gemini API key
 
 ## 🚀 Installation
 
@@ -61,11 +61,11 @@ cd server
 cp config.env .env
 ```
 
-Edit the `.env` file and add your OpenAI API key:
+Edit the `.env` file and add your Google Gemini API key:
 ```
 PORT=5000
 NODE_ENV=development
-OPENAI_API_KEY=your_openai_api_key_here
+GEMINI_API_KEY=your_gemini_api_key_here
 UPLOAD_PATH=./uploads
 MAX_FILE_SIZE=10485760
 ```

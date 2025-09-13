@@ -4,30 +4,68 @@ import './Results.css';
 const Results = () => {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Simulate loading results
-    setTimeout(() => {
-      setResults([
-        {
-          id: 1,
-          type: 'CV Match Analysis',
-          date: '2024-01-15',
-          matchPercentage: 85,
-          summary: 'Strong match with required skills and experience',
-          details: 'Your CV shows excellent alignment with the job requirements...'
-        },
-        {
-          id: 2,
-          type: 'CV Insights',
-          date: '2024-01-14',
-          summary: 'Good overall profile with areas for improvement',
-          details: 'Your CV demonstrates strong technical skills...'
+    // Fetch real analysis results from backend API
+    const fetchResults = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Example: Fetch CV Match Analysis result
+        const response = await fetch('http://localhost:5000/api/analyze/cv-match', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            cvContent: 'Sample CV content here',
+            jdContent: 'Sample Job Description content here',
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-      ]);
-      setLoading(false);
-    }, 1000);
+
+        const data = await response.json();
+
+        // Transform the data to match the results array structure
+        const dynamicResults = [
+          {
+            id: 1,
+            type: 'CV Match Analysis',
+            date: new Date().toISOString().split('T')[0],
+            matchPercentage: extractMatchPercentage(data.analysis),
+            summary: extractSummary(data.analysis),
+            details: data.analysis,
+          },
+          // You can add other analysis types here similarly
+        ];
+
+        setResults(dynamicResults);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchResults();
   }, []);
+
+  // Helper functions to extract match percentage and summary from analysis text
+  const extractMatchPercentage = (analysisText) => {
+    // Simple regex to find percentage number in the text, fallback to null
+    const match = analysisText.match(/(\d{1,3})%/);
+    return match ? parseInt(match[1], 10) : null;
+  };
+
+  const extractSummary = (analysisText) => {
+    // Extract first 100 characters as summary fallback
+    return analysisText ? analysisText.substring(0, 100) + '...' : '';
+  };
 
   return (
     <div className="results-page">
@@ -42,7 +80,11 @@ const Results = () => {
             <div className="spinner"></div>
             <p>Loading results...</p>
           </div>
-        ) : (
+        ) : error ? (
+          <div className="error-state">
+            <p>Error loading results: {error}</p>
+          </div>
+        ) : results.length > 0 ? (
           <div className="results-grid">
             {results.map((result) => (
               <div key={result.id} className="result-card">
@@ -50,7 +92,7 @@ const Results = () => {
                   <h3>{result.type}</h3>
                   <span className="result-date">{result.date}</span>
                 </div>
-                
+
                 {result.matchPercentage && (
                   <div className="match-percentage">
                     <div className="percentage-circle">
@@ -59,17 +101,17 @@ const Results = () => {
                     </div>
                   </div>
                 )}
-                
+
                 <div className="result-summary">
                   <h4>Summary</h4>
                   <p>{result.summary}</p>
                 </div>
-                
+
                 <div className="result-details">
                   <h4>Details</h4>
                   <p>{result.details}</p>
                 </div>
-                
+
                 <div className="result-actions">
                   <button className="view-btn">View Full Report</button>
                   <button className="export-btn">Export PDF</button>
@@ -77,9 +119,7 @@ const Results = () => {
               </div>
             ))}
           </div>
-        )}
-
-        {!loading && results.length === 0 && (
+        ) : (
           <div className="empty-state">
             <div className="empty-icon">📊</div>
             <h3>No Results Yet</h3>
@@ -92,4 +132,4 @@ const Results = () => {
   );
 };
 
-export default Results; 
+export default Results;
